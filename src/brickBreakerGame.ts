@@ -1,13 +1,39 @@
-function brickBreakerGame(args, options) {
+interface Coord {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  text: string;
+  status: number;
+}
+interface Args {
+  canvas: HTMLCanvasElement;
+  coords: Coord[];
+}
+interface Sounds {
+  win: string;
+  brick: string;
+  paddle: string;
+  loseLife: string;
+  gameOver: string;
+}
+interface Options {
+  sounds: Sounds;
+  ballRadius?: number;
+  paddleHeight?: number;
+  paddleWidth?: number;
+}
+
+function brickBreakerGame(args: Args, options: Options) {
   const { win, brick, paddle, loseLife, gameOver: gameOverSound } = options.sounds;
 
   const canvas = args.canvas;
   const ctx = args.canvas.getContext('2d');
   const bricks = args.coords;
 
-  const ballRadius = 10;
-  const paddleHeight = 10;
-  const paddleWidth = 75;
+  const ballRadius = options.ballRadius || 10;
+  const paddleHeight = options.paddleHeight || 10;
+  const paddleWidth = options.paddleWidth || 75;
 
   let x = canvas.width / 2;
   let y = canvas.height - 30;
@@ -25,7 +51,7 @@ function brickBreakerGame(args, options) {
   const BLUE = '#a9ccea';
   const DARK_BLUE = '#30667a';
 
-  function playAudio(audioFile, volume?: number) {
+  function playAudio(audioFile: string, volume?: number) {
     const audio = new Audio(audioFile);
     audio.volume = volume || 0.75;
     audio.play();
@@ -133,7 +159,7 @@ function brickBreakerGame(args, options) {
   }
 
   function drawBricks() {
-    bricks.forEach((coord) => {
+    bricks.forEach((coord: Coord) => {
       if (coord.status === 1) {
         ctx.fillStyle = BLUE;
         ctx.strokeStyle = BLUE;
