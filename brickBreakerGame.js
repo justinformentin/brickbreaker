@@ -10,20 +10,21 @@ const loseLifeSound = '../sounds/loselife.mp3';
 const gameOverSound = '../sounds/gameover.mp3';
 
 function brickBreakerGame() {
+  const ballRadius = 10;
+  const paddleHeight = 10;
+  const paddleWidth = 75;
+
   let canvas;
   let ctx;
-  let ballRadius = 10;
   let x;
   let y;
-  let dx = 2;
-  let dy = -2;
-  let paddleHeight = 10;
-  let paddleWidth = 75;
+  let dx = 3;
+  let dy = -3;
   let paddleX;
   let rightPressed = false;
   let leftPressed = false;
   let score = 0;
-  let lives = 2;
+  let lives = 3;
   let bricks = [];
   let gameStarted = false;
   let gameCleared = false;
@@ -32,10 +33,13 @@ function brickBreakerGame() {
   const BLUE = '#a9ccea';
   const DARK_BLUE = '#30667a';
 
-  document.addEventListener('canvas:gameCleared', () => {
-    !gameCleared && (gameCleared = true);
+  const clearGame = () => {
+    gameCleared = true;
     ctx && ctx.clearRect(0, 0, canvas.width, canvas.height);
-  });
+    document.removeEventListener('canvas:gameCleared', clearGame);
+  };
+
+  document.addEventListener('canvas:gameCleared', clearGame);
 
   function playAudio(audioFile, volume){
     const audio = new Audio(audioFile);
@@ -74,9 +78,8 @@ function brickBreakerGame() {
   }
 
   function drawBall() {
-    let paddleOffsetHeight = 0;
     ctx.beginPath();
-    ctx.arc(x, y - paddleOffsetHeight, ballRadius, 0, Math.PI * 2);
+    ctx.arc(x, y, ballRadius, 0, Math.PI * 2);
     ctx.fillStyle = DARK_BLUE;
     ctx.fill();
     ctx.closePath();
@@ -114,7 +117,6 @@ function brickBreakerGame() {
         ctx.fillStyle = BLUE;
         ctx.strokeStyle = BLUE;
         roundedRect(coord.x, coord.y, coord.width, coord.height, 10);
-
         ctx.fillStyle = '#000000';
         ctx.font = '12px sans-serif';
         ctx.textAlign = 'center';
@@ -213,8 +215,6 @@ function brickBreakerGame() {
     x = canvas.width / 2;
     y = canvas.height - 30;
     paddleX = (canvas.width - paddleWidth) / 2;
-    lives = 2;
-    score = 0;
     gameCleared = false;
     gameOver = false;
 
