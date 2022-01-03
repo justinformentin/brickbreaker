@@ -17,11 +17,19 @@ interface Sounds {
   loseLife: string;
   gameOver: string;
 }
+interface Colors {
+  text?: string;
+  paddle?: string;
+  bricks?: string;
+  ball?: string;
+}
 interface Options {
   sounds: Sounds;
+  colors?: Colors;
   ballRadius?: number;
   paddleHeight?: number;
   paddleWidth?: number;
+  lives?: number;
 }
 
 function brickBreakerGame(args: Args, options: Options) {
@@ -34,9 +42,10 @@ function brickBreakerGame(args: Args, options: Options) {
   const ballRadius = options.ballRadius || 10;
   const paddleHeight = options.paddleHeight || 10;
   const paddleWidth = options.paddleWidth || 75;
+  let lives = options.lives || 3;
 
   let x = canvas.width / 2;
-  let y = canvas.height - 30;
+  let y = canvas.height - 50;
   let paddleX = (canvas.width - paddleWidth) / 2;
 
   let dx = 3;
@@ -44,12 +53,19 @@ function brickBreakerGame(args: Args, options: Options) {
   let rightPressed = false;
   let leftPressed = false;
   let score = 0;
-  let lives = 3;
   let gameCleared = false;
   let gameOver = false;
-  // const BLUE = '#96c9dc';
+
   const BLUE = '#a9ccea';
   const DARK_BLUE = '#30667a';
+
+  const colors = {
+    paddle: DARK_BLUE,
+    ball: DARK_BLUE,
+    bricks: BLUE,
+    text: BLUE,
+    ...options.colors,
+  };
 
   function playAudio(audioFile: string, volume?: number) {
     const audio = new Audio(audioFile);
@@ -57,7 +73,7 @@ function brickBreakerGame(args: Args, options: Options) {
     audio.play();
   }
 
-  function gameStartCoords() {
+  function resetCoordValues() {
     x = canvas.width / 2;
     y = canvas.height - 50;
     dx = 3;
@@ -118,28 +134,29 @@ function brickBreakerGame(args: Args, options: Options) {
           playAudio(gameOverSound);
         } else {
           playAudio(loseLife);
-          gameStartCoords();
+          resetCoordValues();
         }
       }
     }
   }
 
-  function drawBall() {
+  function drawItem(item, color) {
     ctx.beginPath();
-    ctx.arc(x, y, ballRadius, 0, Math.PI * 2);
-    ctx.fillStyle = DARK_BLUE;
+    item();
+    ctx.fillStyle = color;
     ctx.fill();
     ctx.closePath();
   }
 
-  function drawPaddle() {
-    ctx.beginPath();
-    const paddleRectY = canvas.height - paddleHeight - 30;
-    ctx.rect(paddleX, paddleRectY, paddleWidth, paddleHeight);
-    ctx.fillStyle = DARK_BLUE;
-    ctx.fill();
-    ctx.closePath();
-  }
+  const drawBall = () =>
+    drawItem(() => ctx.arc(x, y, ballRadius, 0, Math.PI * 2), colors.ball);
+
+  const drawPaddle = () =>
+    drawItem(
+      () =>
+        ctx.rect(paddleX, canvas.height - paddleHeight - 30, paddleWidth, paddleHeight),
+      colors.paddle
+    );
 
   function roundedRect(rectX, rectY, rectWidth, rectHeight, cornerRadius?) {
     const radius = Math.min(
@@ -161,8 +178,8 @@ function brickBreakerGame(args: Args, options: Options) {
   function drawBricks() {
     bricks.forEach((coord: Coord) => {
       if (coord.status === 1) {
-        ctx.fillStyle = BLUE;
-        ctx.strokeStyle = BLUE;
+        ctx.fillStyle = colors.bricks;
+        ctx.strokeStyle = colors.bricks;
         roundedRect(coord.x, coord.y, coord.width, coord.height, 10);
         ctx.fillStyle = '#000000';
         ctx.font = '12px sans-serif';
@@ -173,25 +190,20 @@ function brickBreakerGame(args: Args, options: Options) {
     });
   }
 
-  function drawScore() {
+  function drawText(text, width, height) {
     ctx.font = 'bold 16px Arial';
-    ctx.fillStyle = DARK_BLUE;
-    ctx.fillText('Score: ' + score, 38, canvas.height - 15);
+    ctx.fillStyle = colors.text;
+    ctx.fillText(text, width, height);
   }
 
-  function drawLives() {
-    ctx.font = 'bold 16px Arial';
-    ctx.fillStyle = DARK_BLUE;
-    ctx.fillText('Lives: ' + lives, canvas.width - 45, canvas.height - 15);
-  }
+  const drawScore = () => drawText('Score: ' + score, 38, canvas.height - 15);
+
+  const drawLives = () =>
+    drawText('Lives: ' + lives, canvas.width - 45, canvas.height - 15);
 
   function drawOverlay(text) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = DARK_BLUE;
-    roundedRect(canvas.width / 2 - 100, canvas.height / 2 - 50, 200, 100);
-    ctx.font = '16px Arial';
-    ctx.fillStyle = DARK_BLUE;
-    ctx.fillText(text, canvas.width / 2, canvas.height / 2);
+    drawText(text, canvas.width / 2, canvas.height / 2);
   }
 
   function handleKeyPresses() {
@@ -260,7 +272,6 @@ function brickBreakerGame(args: Args, options: Options) {
 
   document.addEventListener('canvas:gameCleared', clearGame);
 
-  gameStartCoords();
   draw();
 
   return { clearGame };
