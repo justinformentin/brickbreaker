@@ -169,6 +169,14 @@ function brickBreakerGame() {
     ctx.fillText(text, canvas.width / 2, canvas.height / 2);
   }
 
+  function handleKeyPresses() {
+    if (rightPressed && paddleX < canvas.width - paddleWidth) {
+      paddleX += 7;
+    } else if (leftPressed && paddleX > 0) {
+      paddleX -= 7;
+    }
+  }
+
   function draw() {
     if (!gameStarted) {
       gameStartCoords();
@@ -186,6 +194,7 @@ function brickBreakerGame() {
       drawScore();
       drawLives();
       collisionDetection();
+      handleKeyPresses();
 
       if (x + dx > canvas.width - ballRadius || x + dx < ballRadius) {
         dx = -dx;
@@ -215,12 +224,6 @@ function brickBreakerGame() {
         }
       }
 
-      if (rightPressed && paddleX < canvas.width - paddleWidth) {
-        paddleX += 7;
-      } else if (leftPressed && paddleX > 0) {
-        paddleX -= 7;
-      }
-
       x += dx;
       y += dy;
       !gameCleared && requestAnimationFrame(draw);
@@ -240,22 +243,21 @@ function brickBreakerGame() {
     gameCleared = false;
     gameOver = false;
 
-    // console.log('gameOIver', gameOver);
     const keyDownBase = (keyCode, bool) => {
-      if (keyCode === 39) {
-        rightPressed = bool;
-      } else if (keyCode === 37) {
-        leftPressed = bool;
-      }
+      rightPressed = bool && keyCode === 39;
+      leftPressed = bool && keyCode === 37;
     };
 
     const keyDownHandler = (e) => keyDownBase(e.keyCode, true);
 
     const keyUpHandler = (e) => keyDownBase(e.keyCode, false);
 
+    document.addEventListener('keydown', keyDownHandler, false);
+    document.addEventListener('keyup', keyUpHandler, false);
+
     const canvasRect = canvas.getBoundingClientRect();
     function mouseMoveHandler(e) {
-      let relativeX = e.clientX - canvas.offsetLeft;
+      const relativeX = e.clientX - canvas.offsetLeft;
       const paddleHalf = paddleWidth / 2;
       if (relativeX > canvasRect.left && relativeX < canvasRect.right) {
         const newLoc = relativeX - canvasRect.left;
@@ -266,8 +268,7 @@ function brickBreakerGame() {
         }
       }
     }
-    document.addEventListener('keydown', keyDownHandler, false);
-    document.addEventListener('keyup', keyUpHandler, false);
+
     canvas.addEventListener('mousemove', mouseMoveHandler, false);
 
     draw();
