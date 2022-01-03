@@ -25,7 +25,7 @@ function brickBreakerGame(args, options) {
   const BLUE = '#a9ccea';
   const DARK_BLUE = '#30667a';
 
-  function playAudio(audioFile, volume) {
+  function playAudio(audioFile, volume?: number) {
     const audio = new Audio(audioFile);
     audio.volume = volume || 0.75;
     audio.play();
@@ -115,7 +115,7 @@ function brickBreakerGame(args, options) {
     ctx.closePath();
   }
 
-  function roundedRect(rectX, rectY, rectWidth, rectHeight, cornerRadius) {
+  function roundedRect(rectX, rectY, rectWidth, rectHeight, cornerRadius?) {
     const radius = Math.min(
       Math.max(rectWidth - 1, 1),
       Math.max(rectHeight - 1, 1),

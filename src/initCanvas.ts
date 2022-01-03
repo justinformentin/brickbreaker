@@ -1,9 +1,9 @@
-const referenceContainer = document.querySelector('.reference-container');
-const blockContainer = document.querySelector('.block-container');
-const blockCanvas = document.querySelector('.block-canvas');
+const referenceContainer: HTMLElement = document.querySelector('.reference-container');
+const blockContainer: HTMLElement = document.querySelector('.block-container');
+const blockCanvas: HTMLCanvasElement = document.querySelector('.block-canvas');
 
-referenceContainer.refHeight = referenceContainer.offsetHeight + 150 + 'px';
-referenceContainer.refWidth = referenceContainer.offsetWidth + 'px';
+const refHeight = referenceContainer.offsetHeight + 150 + 'px';
+const refWidth = referenceContainer.offsetWidth + 'px';
 blockCanvas.height = referenceContainer.offsetHeight + 150;
 blockCanvas.width = referenceContainer.offsetWidth;
 
@@ -32,8 +32,8 @@ function convertToCanvas() {
     const coords = getBrickCoords();
     blockCanvas.style.display = 'block';
     playing = true;
-    referenceContainer.style.height = referenceContainer.refHeight;
-    referenceContainer.style.width = referenceContainer.refWidth;
+    referenceContainer.style.height = refHeight;
+    referenceContainer.style.width = refWidth;
 
     const sounds = {
       win: 'sounds/win.mp3',
