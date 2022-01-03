@@ -1,9 +1,9 @@
-const referenceContainer = document.querySelector(".reference-container");
-const blockContainer = document.querySelector(".block-container");
-const blockCanvas = document.querySelector(".block-canvas");
+const referenceContainer = document.querySelector('.reference-container');
+const blockContainer = document.querySelector('.block-container');
+const blockCanvas = document.querySelector('.block-canvas');
 
-referenceContainer.refHeight = referenceContainer.offsetHeight + 150 + "px";
-referenceContainer.refWidth = referenceContainer.offsetWidth + "px";
+referenceContainer.refHeight = referenceContainer.offsetHeight + 150 + 'px';
+referenceContainer.refWidth = referenceContainer.offsetWidth + 'px';
 blockCanvas.height = referenceContainer.offsetHeight + 150;
 blockCanvas.width = referenceContainer.offsetWidth;
 
@@ -11,7 +11,7 @@ let playing = false;
 
 function getBrickCoords() {
   const parentRect = blockContainer.getBoundingClientRect();
-  const blocks = blockContainer.querySelectorAll("a");
+  const blocks = blockContainer.querySelectorAll('a');
   return Array.from(blocks).map((el) => {
     const rect = el.getBoundingClientRect();
     return {
@@ -27,26 +27,33 @@ function getBrickCoords() {
 
 function convertToCanvas() {
   if (blockCanvas) {
-    const ctx = blockCanvas.getContext("2d");
+    const ctx = blockCanvas.getContext('2d');
     const coords = getBrickCoords();
-    blockCanvas.style.display = "block";
+    blockCanvas.style.display = 'block';
     playing = true;
     referenceContainer.style.height = referenceContainer.refHeight;
     referenceContainer.style.width = referenceContainer.refWidth;
-    const brickBreaker = brickBreakerGame();
+
+    const sounds = {
+      win: 'sounds/win.mp3',
+      brick: 'sounds/brick.mp3',
+      paddle: 'sounds/paddle.mp3',
+      loseLife: 'sounds/loselife.mp3',
+      gameOver: 'sounds/gameover.mp3',
+    };
+    const brickBreaker = brickBreakerGame({ sounds });
     brickBreaker(blockCanvas, ctx, coords);
     blockContainer.style.display = 'none';
-
   }
 }
 
-document.querySelector(".start-game").addEventListener("click", () => {
+document.querySelector('.start-game').addEventListener('click', () => {
   if (!playing) {
     convertToCanvas();
   } else {
-    document.dispatchEvent(new Event("canvas:gameCleared"));
-    referenceContainer.style.height = "auto";
-    blockCanvas.style.display = "none";
+    document.dispatchEvent(new Event('canvas:gameCleared'));
+    referenceContainer.style.height = 'auto';
+    blockCanvas.style.display = 'none';
     playing = false;
     blockContainer.style.display = 'flex';
   }

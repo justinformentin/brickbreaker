@@ -1,15 +1,6 @@
-// import winSound from '../sounds/win.mp3';
-// import brickSound from '../sounds/brick.mp3';
-// import paddleSound from '../sounds/paddle.mp3';
-// import loseLifeSound from '../sounds/loselife.mp3';
-// import gameOverSound from '../sounds/gameover.mp3';
-const winSound = '../sounds/win.mp3';
-const brickSound = '../sounds/brick.mp3';
-const paddleSound = '../sounds/paddle.mp3';
-const loseLifeSound = '../sounds/loselife.mp3';
-const gameOverSound = '../sounds/gameover.mp3';
+function brickBreakerGame(options) {
+  const { win, brick, paddle, loseLife, gameOver: gameOverSound } = options.sounds;
 
-function brickBreakerGame() {
   const ballRadius = 10;
   const paddleHeight = 10;
   const paddleWidth = 75;
@@ -67,10 +58,10 @@ function brickBreakerGame() {
         dy = -dy;
         b.status = 0;
         score++;
-        playAudio(brickSound);
+        playAudio(brick);
         if (score === bricks.length) {
           gameOver = true;
-          playAudio(winSound);
+          playAudio(win);
           drawOverlay('You Win');
         }
       }
@@ -93,7 +84,7 @@ function brickBreakerGame() {
         if (ballMoveLeftHitRight || ballMoveRightHitLeft) dx = -dx;
         // PADDLE COLLISION, CHANGE BALL DIRECTION
         dy = -dy;
-        playAudio(paddleSound);
+        playAudio(paddle);
       } else {
         // BALL UNDER PADDLE
         // REMOVE LIFE
@@ -107,7 +98,7 @@ function brickBreakerGame() {
           drawOverlay('Game Over');
           playAudio(gameOverSound);
         } else {
-          playAudio(loseLifeSound);
+          playAudio(loseLife);
           gameStartCoords();
         }
       }
@@ -197,11 +188,6 @@ function brickBreakerGame() {
       gameStartCoords();
       gameStarted = true;
     }
-
-    // if (gameCleared) {
-    //   ctx.clearRect(0, 0, canvas.width, canvas.height);
-    //   gameCleared = false;
-    // } else
 
     if (!gameOver) {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
