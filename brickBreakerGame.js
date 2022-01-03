@@ -24,7 +24,6 @@ function brickBreakerGame() {
   let leftPressed = false;
   let score = 0;
   let lives = 2;
-  let paddleRect;
   let bricks = [];
   let gameStarted = false;
   let gameCleared = false;
@@ -76,10 +75,6 @@ function brickBreakerGame() {
 
   function drawBall() {
     let paddleOffsetHeight = 0;
-    // if (renderedCount < 3) {
-    //   paddleOffsetHeight = paddleHeight - 5;
-    //   renderedCount++;
-    // }
     ctx.beginPath();
     ctx.arc(x, y - paddleOffsetHeight, ballRadius, 0, Math.PI * 2);
     ctx.fillStyle = DARK_BLUE;
@@ -89,14 +84,8 @@ function brickBreakerGame() {
 
   function drawPaddle() {
     ctx.beginPath();
-    paddleRect = {
-      x: paddleX,
-      y: canvas.height - paddleHeight - 30,
-      width: paddleWidth,
-      height: paddleHeight,
-    };
-    ctx.rect(paddleRect.x, paddleRect.y, paddleRect.width, paddleRect.height);
-
+    const paddleRectY = canvas.height - paddleHeight - 30;
+    ctx.rect(paddleX, paddleRectY, paddleWidth, paddleHeight);
     ctx.fillStyle = DARK_BLUE;
     ctx.fill();
     ctx.closePath();
@@ -193,13 +182,8 @@ function brickBreakerGame() {
 
       if (y + dy < ballRadius) {
         dy = -dy;
-        // console.log('y+dy<ballRadius', dy)
       } else if (y + dy > canvas.height - ballRadius - (paddleHeight + 20)) {
-        // } else if (y + dy > paddleHeight) {
-        // console.log('paddleHeight', paddleHeight)
-        // console.log('y',y)
         if (x > paddleX && x < paddleX + paddleWidth && y > paddleHeight) {
-          // if (intersectsPaddle([x, y], [paddleRect.x, paddleRect.y, paddleRect.width, paddleRect.height])) {
           dy = -dy;
           playAudio(paddleSound);
         } else {
