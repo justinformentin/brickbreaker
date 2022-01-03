@@ -55,7 +55,7 @@ function brickBreakerGame() {
     paddleX = (canvas.width - paddleWidth) / 2;
   }
 
-  function collisionDetection() {
+  function brickCollisionDetection() {
     bricks.forEach((b) => {
       if (
         b.status === 1 &&
@@ -75,6 +75,40 @@ function brickBreakerGame() {
         }
       }
     });
+  }
+
+  function paddleCollisionDetection() {
+    // IF BALL HITS WALL, CHANGE DIRECTION
+    if (x + dx > canvas.width - ballRadius || x + dx < ballRadius) dx = -dx;
+    if (y + dy < ballRadius) {
+      // IF BALL HITS CEILING, CHANGE DIRECTIOn
+      dy = -dy;
+    } else if (y + dy > canvas.height - ballRadius - (paddleHeight + 20)) {
+      if (x > paddleX && x < paddleX + paddleWidth && y > paddleHeight) {
+        // PADDLE COLLISION, CHANGE BALL DIRECTION
+        dy = -dy;
+        playAudio(paddleSound);
+      } else {
+        // BALL UNDER PADDLE
+        // REMOVE LIFE
+        lives--;
+        // RESET BALL SPEED
+        dx = -3;
+        dy = -3;
+
+        if (!lives) {
+          gameOver = true;
+          drawOverlay('Game Over');
+          playAudio(gameOverSound);
+        } else {
+          playAudio(loseLifeSound);
+          gameStartCoords();
+        }
+      }
+    }
+
+    x += dx;
+    y += dy;
   }
 
   function drawBall() {
@@ -175,34 +209,9 @@ function brickBreakerGame() {
       drawPaddle();
       drawScore();
       drawLives();
-      collisionDetection();
+      brickCollisionDetection();
+      paddleCollisionDetection();
       handleKeyPresses();
-
-      if (x + dx > canvas.width - ballRadius || x + dx < ballRadius) {
-        dx = -dx;
-      }
-
-      if (y + dy < ballRadius) {
-        dy = -dy;
-      } else if (y + dy > canvas.height - ballRadius - (paddleHeight + 20)) {
-        if (x > paddleX && x < paddleX + paddleWidth && y > paddleHeight) {
-          dy = -dy;
-          playAudio(paddleSound);
-        } else {
-          lives--;
-          if (!lives) {
-            gameOver = true;
-            drawOverlay('Game Over');
-            playAudio(gameOverSound);
-          } else {
-            playAudio(loseLifeSound);
-            gameStartCoords();
-          }
-        }
-      }
-
-      x += dx;
-      y += dy;
       !gameCleared && requestAnimationFrame(draw);
     }
   }
