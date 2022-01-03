@@ -41,7 +41,7 @@ function brickBreakerGame() {
 
   document.addEventListener('canvas:gameCleared', clearGame);
 
-  function playAudio(audioFile, volume){
+  function playAudio(audioFile, volume) {
     const audio = new Audio(audioFile);
     audio.volume = volume || 0.75;
     audio.play();
@@ -85,6 +85,12 @@ function brickBreakerGame() {
       dy = -dy;
     } else if (y + dy > canvas.height - ballRadius - (paddleHeight + 20)) {
       if (x > paddleX && x < paddleX + paddleWidth && y > paddleHeight) {
+        // BALL ABOVE PADDLE
+        // IF BALL IS MOVING ONE DIRECTION AND HITS HALF OF PADDLE ON OTHER SIDE, CHANGE DIRECTIONS
+        const paddleMidPoint = paddleX + paddleWidth / 2;
+        const ballMoveLeftHitRight = dx < 0 && x > paddleMidPoint;
+        const ballMoveRightHitLeft = dx > 0 && x < paddleMidPoint;
+        if (ballMoveLeftHitRight || ballMoveRightHitLeft) dx = -dx;
         // PADDLE COLLISION, CHANGE BALL DIRECTION
         dy = -dy;
         playAudio(paddleSound);
@@ -106,9 +112,6 @@ function brickBreakerGame() {
         }
       }
     }
-
-    x += dx;
-    y += dy;
   }
 
   function drawBall() {
@@ -155,11 +158,7 @@ function brickBreakerGame() {
         ctx.font = '12px sans-serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillText(
-          coord.text,
-          coord.x + coord.width / 2,
-          coord.y + coord.height / 2
-        );
+        ctx.fillText(coord.text, coord.x + coord.width / 2, coord.y + coord.height / 2);
       }
     });
   }
@@ -199,10 +198,12 @@ function brickBreakerGame() {
       gameStarted = true;
     }
 
-    if (gameCleared) {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      gameCleared = false;
-    } else if (!gameOver) {
+    // if (gameCleared) {
+    //   ctx.clearRect(0, 0, canvas.width, canvas.height);
+    //   gameCleared = false;
+    // } else
+
+    if (!gameOver) {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       drawBricks();
       drawBall();
@@ -212,6 +213,9 @@ function brickBreakerGame() {
       brickCollisionDetection();
       paddleCollisionDetection();
       handleKeyPresses();
+      // Move ball
+      x += dx;
+      y += dy;
       !gameCleared && requestAnimationFrame(draw);
     }
   }
@@ -256,6 +260,5 @@ function brickBreakerGame() {
     canvas.addEventListener('mousemove', mouseMoveHandler, false);
 
     draw();
-  }
-
+  };
 }
