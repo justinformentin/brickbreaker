@@ -102,29 +102,20 @@ function brickBreakerGame() {
     ctx.closePath();
   }
 
-  function roundedRect(x, y, width, height, radius) {
-    radius = Math.min(Math.max(width - 1, 1), Math.max(height - 1, 1), radius);
-    let rectX = x;
-    let rectY = y;
-    let rectWidth = width;
-    let rectHeight = height;
-    let cornerRadius = radius;
-
+  function roundedRect(rectX, rectY, rectWidth, rectHeight, cornerRadius) {
+    const radius = Math.min(
+      Math.max(rectWidth - 1, 1),
+      Math.max(rectHeight - 1, 1),
+      cornerRadius
+    );
+    const rx = rectX + radius / 2,
+      ry = rectY + radius / 2,
+      rw = rectWidth - radius,
+      rh = rectHeight - radius;
     ctx.lineJoin = 'round';
-    ctx.lineWidth = cornerRadius;
-    ctx.strokeRect(
-      rectX + cornerRadius / 2,
-      rectY + cornerRadius / 2,
-      rectWidth - cornerRadius,
-      rectHeight - cornerRadius
-    );
-    ctx.fillRect(
-      rectX + cornerRadius / 2,
-      rectY + cornerRadius / 2,
-      rectWidth - cornerRadius,
-      rectHeight - cornerRadius
-    );
-    // ctx.stroke();
+    ctx.lineWidth = radius;
+    ctx.strokeRect(rx, ry, rw, rh);
+    ctx.fillRect(rx, ry, rw, rh);
     ctx.fill();
   }
 
@@ -230,7 +221,7 @@ function brickBreakerGame() {
     }
   }
 
-  function init(canv, context, coords) {
+  return (canv, context, coords) => {
     // console.log('brickbreaker init canv', canv);
     canvas = canv;
     ctx = context;
@@ -274,5 +265,4 @@ function brickBreakerGame() {
     draw();
   }
 
-  return init;
 }
