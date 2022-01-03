@@ -8,6 +8,7 @@ blockCanvas.height = referenceContainer.offsetHeight + 150;
 blockCanvas.width = referenceContainer.offsetWidth;
 
 let playing = false;
+let brickBreaker;
 
 function getBrickCoords() {
   const parentRect = blockContainer.getBoundingClientRect();
@@ -27,7 +28,7 @@ function getBrickCoords() {
 
 function convertToCanvas() {
   if (blockCanvas) {
-    const ctx = blockCanvas.getContext('2d');
+    // const ctx = blockCanvas.getContext('2d');
     const coords = getBrickCoords();
     blockCanvas.style.display = 'block';
     playing = true;
@@ -41,8 +42,7 @@ function convertToCanvas() {
       loseLife: 'sounds/loselife.mp3',
       gameOver: 'sounds/gameover.mp3',
     };
-    const brickBreaker = brickBreakerGame({ sounds });
-    brickBreaker(blockCanvas, ctx, coords);
+    brickBreaker = brickBreakerGame({ canvas: blockCanvas, coords }, { sounds });
     blockContainer.style.display = 'none';
   }
 }
@@ -51,7 +51,8 @@ document.querySelector('.start-game').addEventListener('click', () => {
   if (!playing) {
     convertToCanvas();
   } else {
-    document.dispatchEvent(new Event('canvas:gameCleared'));
+    // document.dispatchEvent(new Event('canvas:gameCleared'));
+    brickBreaker.clearGame();
     referenceContainer.style.height = 'auto';
     blockCanvas.style.display = 'none';
     playing = false;

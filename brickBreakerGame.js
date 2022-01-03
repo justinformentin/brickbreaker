@@ -1,36 +1,29 @@
-function brickBreakerGame(options) {
+function brickBreakerGame(args, options) {
   const { win, brick, paddle, loseLife, gameOver: gameOverSound } = options.sounds;
+
+  const canvas = args.canvas;
+  const ctx = args.canvas.getContext('2d');
+  const bricks = args.coords;
 
   const ballRadius = 10;
   const paddleHeight = 10;
   const paddleWidth = 75;
 
-  let canvas;
-  let ctx;
-  let x;
-  let y;
+  let x = canvas.width / 2;
+  let y = canvas.height - 30;
+  let paddleX = (canvas.width - paddleWidth) / 2;
+
   let dx = 3;
   let dy = -3;
-  let paddleX;
   let rightPressed = false;
   let leftPressed = false;
   let score = 0;
   let lives = 3;
-  let bricks = [];
-  let gameStarted = false;
   let gameCleared = false;
   let gameOver = false;
   // const BLUE = '#96c9dc';
   const BLUE = '#a9ccea';
   const DARK_BLUE = '#30667a';
-
-  const clearGame = () => {
-    gameCleared = true;
-    ctx && ctx.clearRect(0, 0, canvas.width, canvas.height);
-    document.removeEventListener('canvas:gameCleared', clearGame);
-  };
-
-  document.addEventListener('canvas:gameCleared', clearGame);
 
   function playAudio(audioFile, volume) {
     const audio = new Audio(audioFile);
@@ -184,11 +177,6 @@ function brickBreakerGame(options) {
   }
 
   function draw() {
-    if (!gameStarted) {
-      gameStartCoords();
-      gameStarted = true;
-    }
-
     if (!gameOver) {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       drawBricks();
@@ -206,45 +194,48 @@ function brickBreakerGame(options) {
     }
   }
 
-  return (canv, context, coords) => {
-    // console.log('brickbreaker init canv', canv);
-    canvas = canv;
-    ctx = context;
-    bricks = coords;
-    x = canvas.width / 2;
-    y = canvas.height - 30;
-    paddleX = (canvas.width - paddleWidth) / 2;
-    gameCleared = false;
-    gameOver = false;
+  const keyDownBase = (keyCode, bool) => {
+    rightPressed = bool && keyCode === 39;
+    leftPressed = bool && keyCode === 37;
+  };
 
-    const keyDownBase = (keyCode, bool) => {
-      rightPressed = bool && keyCode === 39;
-      leftPressed = bool && keyCode === 37;
-    };
+  const keyDownHandler = (e) => keyDownBase(e.keyCode, true);
 
-    const keyDownHandler = (e) => keyDownBase(e.keyCode, true);
+  const keyUpHandler = (e) => keyDownBase(e.keyCode, false);
 
-    const keyUpHandler = (e) => keyDownBase(e.keyCode, false);
+  document.addEventListener('keydown', keyDownHandler, false);
+  document.addEventListener('keyup', keyUpHandler, false);
 
-    document.addEventListener('keydown', keyDownHandler, false);
-    document.addEventListener('keyup', keyUpHandler, false);
+  const canvasRect = canvas.getBoundingClientRect();
 
-    const canvasRect = canvas.getBoundingClientRect();
-    function mouseMoveHandler(e) {
-      const relativeX = e.clientX - canvas.offsetLeft;
-      const paddleHalf = paddleWidth / 2;
-      if (relativeX > canvasRect.left && relativeX < canvasRect.right) {
-        const newLoc = relativeX - canvasRect.left;
-        const leftWallLimit = newLoc - paddleHalf >= 0;
-        const rightWallLimit = newLoc <= canvas.width - paddleHalf;
-        if (leftWallLimit && rightWallLimit) {
-          paddleX = relativeX - canvasRect.left - paddleHalf;
-        }
+  function mouseMoveHandler(e) {
+    const relativeX = e.clientX - canvas.offsetLeft;
+    const paddleHalf = paddleWidth / 2;
+    if (relativeX > canvasRect.left && relativeX < canvasRect.right) {
+      const newLoc = relativeX - canvasRect.left;
+      const leftWallLimit = newLoc - paddleHalf >= 0;
+      const rightWallLimit = newLoc <= canvas.width - paddleHalf;
+      if (leftWallLimit && rightWallLimit) {
+        paddleX = relativeX - canvasRect.left - paddleHalf;
       }
     }
+  }
 
-    canvas.addEventListener('mousemove', mouseMoveHandler, false);
+  canvas.addEventListener('mousemove', mouseMoveHandler, false);
 
-    draw();
+  const clearGame = () => {
+    gameCleared = true;
+    ctx && ctx.clearRect(0, 0, canvas.width, canvas.height);
+    document.removeEventListener('canvas:gameCleared', clearGame);
+    document.removeEventListener('keydown', keyDownHandler);
+    document.removeEventListener('keyup', keyUpHandler);
+    canvas.removeEventListener('mousemove', mouseMoveHandler, false);
   };
+
+  document.addEventListener('canvas:gameCleared', clearGame);
+
+  gameStartCoords();
+  draw();
+
+  return { clearGame };
 }
