@@ -82,17 +82,26 @@ function brickBreakerGame(args: Args, options: Options) {
   }
 
   function brickCollisionDetection() {
+    // Add or substract ball radius offset to make collision more precise.
+    // No offset and the collision happens when the center of the ball contacts the brick.
+    // Offset using just ballRadius without dividing makes it so multipl bricks can be hit simultaneosly on the corners.
+    const brOffset = ballRadius / 1.125;
     bricks.forEach((b) => {
       if (
         b.status === 1 &&
-        x > b.x &&
-        x < b.x + b.width &&
-        y > b.y &&
-        y < b.y + b.height
+        x + brOffset > b.x &&
+        x - brOffset < b.x + b.width &&
+        y + brOffset > b.y &&
+        y - brOffset < b.y + b.height
       ) {
         dy = -dy;
         b.status = 0;
         score++;
+        // Every score multiple of 3, increase ball speed by 0.5.
+        if (score % 3 === 0) {
+          dx = dx < 0 ? dx - 0.5 : dx + 0.5;
+          dy = dy < 0 ? dy - 0.5 : dy + 0.5;
+        }
         playAudio(brick);
         if (score === bricks.length) {
           gameOver = true;
