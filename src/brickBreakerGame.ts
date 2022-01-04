@@ -1,14 +1,17 @@
+interface Brick extends Coord {
+  status: number;
+}
 interface Coord {
   x: number;
   y: number;
   width: number;
   height: number;
   text: string;
-  status: number;
 }
 interface Args {
   canvas: HTMLCanvasElement;
-  coords: Coord[];
+  gameContainer: HTMLElement;
+  nodeList: NodeListOf<HTMLElement>;
 }
 interface Sounds {
   win: string;
@@ -32,12 +35,27 @@ interface Options {
   lives?: number;
 }
 
+function getBrickCoords(nodeList: NodeListOf<HTMLElement>, gameContainer: HTMLElement) {
+  const parentRect = gameContainer.getBoundingClientRect();
+  return Array.from(nodeList).map((el) => {
+    const rect = el.getBoundingClientRect();
+    return {
+      x: rect.left - parentRect.left,
+      y: rect.top - parentRect.top,
+      width: el.offsetWidth,
+      height: el.offsetHeight,
+      text: el.innerText,
+      status: 1,
+    };
+  });
+}
 function brickBreakerGame(args: Args, options: Options) {
   const { win, brick, paddle, loseLife, gameOver: gameOverSound } = options.sounds;
 
   const canvas = args.canvas;
   const ctx = args.canvas.getContext('2d');
-  const bricks = args.coords;
+  const initialBricks = getBrickCoords(args.nodeList, args.gameContainer);
+  let bricks: Brick[] = initialBricks;
 
   const ballRadius = options.ballRadius || 10;
   const paddleHeight = options.paddleHeight || 10;
@@ -185,16 +203,16 @@ function brickBreakerGame(args: Args, options: Options) {
   }
 
   function drawBricks() {
-    bricks.forEach((coord: Coord) => {
-      if (coord.status === 1) {
+    bricks.forEach((brick: Brick) => {
+      if (brick.status === 1) {
         ctx.fillStyle = colors.bricks;
         ctx.strokeStyle = colors.bricks;
-        roundedRect(coord.x, coord.y, coord.width, coord.height, 10);
+        roundedRect(brick.x, brick.y, brick.width, brick.height, 10);
         ctx.fillStyle = '#000000';
         ctx.font = '12px sans-serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillText(coord.text, coord.x + coord.width / 2, coord.y + coord.height / 2);
+        ctx.fillText(brick.text, brick.x + brick.width / 2, brick.y + brick.height / 2);
       }
     });
   }

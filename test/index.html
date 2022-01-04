@@ -48,13 +48,34 @@
     <a class="block">Environment</a>
     <a class="block">Personal</a>
   </div>
-  <canvas
-    class="block-canvas"
-    height="397"
-    width="270"
-    style="display: none"
-  ></canvas>
+  <canvas height="397" width="270" style="display: none"></canvas>
 </div>
 <button class="start-game">Start</button>
 <script src="../lib/brickBreakerGame.js"></script>
 <script src="../lib/initCanvas.js"></script>
+<script>
+  const externalInit = () => {
+    const gameContainer = document.querySelector('.block-container');
+    const referenceContainer = document.querySelector('.reference-container');
+    const canvas = document.querySelector('canvas');
+    const sounds = {
+      win: 'sounds/win.mp3',
+      brick: 'sounds/brick.mp3',
+      paddle: 'sounds/paddle.mp3',
+      loseLife: 'sounds/loselife.mp3',
+      gameOver: 'sounds/gameover.mp3',
+    };
+
+    initBrickBreaker(
+      {
+        canvas,
+        gameContainer,
+        referenceContainer,
+        nodeList: gameContainer.querySelectorAll('a'),
+      },
+      { sounds }
+    );
+  };
+
+  document.querySelector('.start-game').addEventListener('click', externalInit);
+</script>
