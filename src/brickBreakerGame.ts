@@ -33,19 +33,23 @@ interface Options {
   paddleHeight?: number;
   paddleWidth?: number;
   lives?: number;
+  levels?: number;
 }
 
-function getBrickCoords(nodeList: NodeListOf<HTMLElement>, gameContainer: HTMLElement) {
-  const parentRect = gameContainer.getBoundingClientRect();
+function getBrickCoords(
+  nodeList: NodeListOf<HTMLElement>,
+  gameContainer: HTMLElement
+): Brick[] {
+  const parentRect: DOMRect = gameContainer.getBoundingClientRect();
   return Array.from(nodeList).map((el) => {
-    const rect = el.getBoundingClientRect();
+    const rect: DOMRect = el.getBoundingClientRect();
     return {
       x: rect.left - parentRect.left,
       y: rect.top - parentRect.top,
       width: el.offsetWidth,
       height: el.offsetHeight,
       text: el.innerText,
-      status: 1,
+      status: 0,
     };
   });
 }
@@ -55,12 +59,15 @@ function brickBreakerGame(args: Args, options: Options) {
   const canvas = args.canvas;
   const ctx = args.canvas.getContext('2d');
   const initialBricks = getBrickCoords(args.nodeList, args.gameContainer);
+  const resetBricks = () => initialBricks.map((coord) => ({ ...coord, status: 0 }));
   let bricks: Brick[] = initialBricks;
 
   const ballRadius = options.ballRadius || 10;
   const paddleHeight = options.paddleHeight || 10;
   const paddleWidth = options.paddleWidth || 75;
-  let lives = options.lives || 3;
+  const levels = options.levels || 2;
+  let level = 1;
+  let lives = options.lives || 100;
 
   let x = canvas.width / 2;
   let y = canvas.height - 50;
@@ -85,8 +92,8 @@ function brickBreakerGame(args: Args, options: Options) {
     ...options.colors,
   };
 
-  function playAudio(audioFile: string, volume?: number) {
-    const audio = new Audio(audioFile);
+  function playAudio(audioFile: string, volume?: number): void {
+    const audio: HTMLAudioElement = new Audio(audioFile);
     audio.volume = volume || 0.75;
     audio.play();
   }
@@ -99,33 +106,50 @@ function brickBreakerGame(args: Args, options: Options) {
     paddleX = (canvas.width - paddleWidth) / 2;
   }
 
+  function brickCollision(b) {
+    score++;
+    // Every score multiple of 3, increase ball speed by 0.5.
+    if (score % 3 === 0) {
+      dx = dx < 0 ? dx - 0.5 : dx + 0.5;
+      dy = dy < 0 ? dy - 0.5 : dy + 0.5;
+    }
+    playAudio(brick);
+    const totalExpectedScore = bricks.length * ((level * (level + 1)) / 2);
+    if (score === totalExpectedScore) {
+      gameOver = true;
+      playAudio(win);
+      drawOverlay(level < levels ? 'Click to start next level' : 'You Win');
+      if (level < levels) {
+        const resetListener = () => {
+          gameOver = false;
+          level++;
+          bricks = resetBricks();
+          resetCoordValues();
+          draw();
+          canvas.removeEventListener('click', resetListener);
+        };
+        canvas.addEventListener('click', resetListener);
+      }
+    }
+  }
+
   function brickCollisionDetection() {
+    // console.log('bricks', bricks);
     // Add or substract ball radius offset to make collision more precise.
     // No offset and the collision happens when the center of the ball contacts the brick.
     // Offset using just ballRadius without dividing makes it so multipl bricks can be hit simultaneosly on the corners.
     const brOffset = ballRadius / 1.125;
     bricks.forEach((b) => {
       if (
-        b.status === 1 &&
+        b.status < level &&
         x + brOffset > b.x &&
         x - brOffset < b.x + b.width &&
         y + brOffset > b.y &&
         y - brOffset < b.y + b.height
       ) {
         dy = -dy;
-        b.status = 0;
-        score++;
-        // Every score multiple of 3, increase ball speed by 0.5.
-        if (score % 3 === 0) {
-          dx = dx < 0 ? dx - 0.5 : dx + 0.5;
-          dy = dy < 0 ? dy - 0.5 : dy + 0.5;
-        }
-        playAudio(brick);
-        if (score === bricks.length) {
-          gameOver = true;
-          playAudio(win);
-          drawOverlay('You Win');
-        }
+        b.status++;
+        brickCollision(b);
       }
     });
   }
@@ -185,7 +209,13 @@ function brickBreakerGame(args: Args, options: Options) {
       colors.paddle
     );
 
-  function roundedRect(rectX, rectY, rectWidth, rectHeight, cornerRadius?) {
+  function roundedRect(
+    rectX: number,
+    rectY: number,
+    rectWidth: number,
+    rectHeight: number,
+    cornerRadius?: number
+  ) {
     const radius = Math.min(
       Math.max(rectWidth - 1, 1),
       Math.max(rectHeight - 1, 1),
@@ -202,11 +232,15 @@ function brickBreakerGame(args: Args, options: Options) {
     ctx.fill();
   }
 
+  const LevelStatusColors = [[BLUE], [DARK_BLUE, BLUE]];
+
   function drawBricks() {
+    // console.log('bricks', bricks);
     bricks.forEach((brick: Brick) => {
-      if (brick.status === 1) {
-        ctx.fillStyle = colors.bricks;
-        ctx.strokeStyle = colors.bricks;
+      if (brick.status < level) {
+        ctx.fillStyle = LevelStatusColors[level - 1][brick.status];
+        ctx.strokeStyle = LevelStatusColors[level - 1][brick.status];
+
         roundedRect(brick.x, brick.y, brick.width, brick.height, 10);
         ctx.fillStyle = '#000000';
         ctx.font = '12px sans-serif';
@@ -259,21 +293,21 @@ function brickBreakerGame(args: Args, options: Options) {
     }
   }
 
-  const keyDownBase = (keyCode, bool) => {
+  const keyDownBase = (keyCode: number, bool: boolean) => {
     rightPressed = bool && keyCode === 39;
     leftPressed = bool && keyCode === 37;
   };
 
-  const keyDownHandler = (e) => keyDownBase(e.keyCode, true);
+  const keyDownHandler = (e: KeyboardEvent) => keyDownBase(e.keyCode, true);
 
-  const keyUpHandler = (e) => keyDownBase(e.keyCode, false);
+  const keyUpHandler = (e: KeyboardEvent) => keyDownBase(e.keyCode, false);
 
   document.addEventListener('keydown', keyDownHandler, false);
   document.addEventListener('keyup', keyUpHandler, false);
 
   const canvasRect = canvas.getBoundingClientRect();
 
-  function mouseMoveHandler(e) {
+  function mouseMoveHandler(e: MouseEvent) {
     const relativeX = e.clientX - canvas.offsetLeft;
     const paddleHalf = paddleWidth / 2;
     if (relativeX > canvasRect.left && relativeX < canvasRect.right) {
